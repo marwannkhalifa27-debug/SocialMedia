@@ -10,6 +10,9 @@ export const connectionDB = async () => {
         await mongoose.connect(mongo_uri)
         console.log("DB connection has been established")
     } catch (error) {
-        console.log("DB connection has failed to establish")
+        console.log(
+            "DB connection has failed to establish",
+            error instanceof Error ? error.message : String(error)
+        )
     }
 }
