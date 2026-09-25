@@ -38,5 +38,24 @@ export const register = async (req:Request, res:Response, next:NextFunction) => 
 }
 
 export const login = async (req:Request, res:Response, next:NextFunction) => {
-    
+    try {
+        const { email , password } = req.body
+        const user = await findUserByEmail(email)
+
+        if(!user){
+            return res.status(404).json({message:"This email isn't registered"})
+        }
+
+        const matches = await bcrypt.compare(password, user.password)
+        if(!matches){
+            return res.status(409).json({message:"Password doesn't match"})
+        }
+
+        return res.status(200).json({
+            message:"Login successfully",
+            email: email
+        })
+    } catch (error) {
+        next(error)
+    }
 }
