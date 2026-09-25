@@ -13,7 +13,7 @@ const userSchema = new Schema({
             required: true,
             unique: true,
             minLength: 8,
-            maxLength: 15
+            maxLength: 20
         },
     age: {
         type: Number,
@@ -35,9 +35,7 @@ const userSchema = new Schema({
     },
     password: { 
         type: String, 
-        required: true,
-        minLength: 8,
-        maxLength: 15
+        required: true
     },
     role: {
         type: String,

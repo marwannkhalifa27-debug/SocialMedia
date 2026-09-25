@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express"
-import type { ZodIssue } from "zod"
+import type { ZodType } from "zod"
 
-export const validate = async(schema: any) => {
+export const validate = (schema: ZodType) => {
     return (req:Request, res:Response, next:NextFunction) => {
         const result = schema.safeParse(req.body)
         if(!result.success){
@@ -14,7 +14,7 @@ export const validate = async(schema: any) => {
             })
         }
 
-        req.body = result.success
+        req.body = result.data
         next()
     }
 }
