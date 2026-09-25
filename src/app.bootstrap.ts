@@ -4,6 +4,7 @@ import { port } from "./config/env.config.js"
 import { connectionDB } from "./DB/connectionDB.js"
 import { logger } from "./common/middleware/logger.middleware.js"
 import userRouter from "./modules/user/user.controller.js"
+import authRouter from "./modules/auth/auth.controller.js"
 
 export const bootstrap = async () => {
     const app = express()
@@ -12,6 +13,7 @@ export const bootstrap = async () => {
     app.use(express.json())
     app.use(logger)
 
+    app.use("/auth", authRouter)
     app.use("/user", userRouter)
 
     app.get("/", (req:Request, res:Response) => {
