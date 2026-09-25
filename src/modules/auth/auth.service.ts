@@ -42,13 +42,8 @@ export const login = async (req:Request, res:Response, next:NextFunction) => {
         const { email , password } = req.body
         const user = await findUserByEmail(email)
 
-        if(!user){
-            return res.status(404).json({message:"This email isn't registered"})
-        }
-
-        const matches = await bcrypt.compare(password, user.password)
-        if(!matches){
-            return res.status(409).json({message:"Password doesn't match"})
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.status(401).json({ message: "Invalid email or password" })
         }
 
         return res.status(200).json({

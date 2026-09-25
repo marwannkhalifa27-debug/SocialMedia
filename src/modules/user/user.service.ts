@@ -2,7 +2,9 @@ import { userModel } from "../../DB/models/user.model.js"
 
 
 export const findUserByEmail = async (email: string) => {
-    return await userModel.findOne({ email })
+    return await userModel
+        .findOne({ email })
+        .select("+password")
 }
 
 export const findUserByUsername = async (username: string) => {
