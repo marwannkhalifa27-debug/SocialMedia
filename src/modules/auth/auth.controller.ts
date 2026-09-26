@@ -5,8 +5,8 @@ import { loginSchema, registerSchema } from "./auth.validation.js";
 import { authenticate } from "../../common/middleware/auth.middleware.js";
 const authRouter = Router()
 
-authRouter.post("/register", authenticate, validate(registerSchema), register)
-authRouter.post("/login", authenticate, validate(loginSchema), login)
+authRouter.post("/register", validate(registerSchema), register)
+authRouter.post("/login", validate(loginSchema), login)
 
 
 export default authRouter

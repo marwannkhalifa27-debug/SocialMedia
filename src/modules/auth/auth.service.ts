@@ -21,8 +21,8 @@ export const register = async (req:Request, res:Response, next:NextFunction) => 
             fullName, username, email, password:hashed, sex, age, phone
         })
 
-        const accessToken = generateAccessToken(user)
-        const refreshToken = generateRefreshToken(user)
+        const accessToken = generateAccessToken({ _id: user._id.toString(), role: user.role })
+        const refreshToken = generateRefreshToken({ _id: user._id.toString(), role: user.role })
         
         return res.status(201).json({
             message:"User created",
@@ -55,8 +55,8 @@ export const login = async (req:Request, res:Response, next:NextFunction) => {
             return res.status(401).json({ message: "Invalid email or password" })
         }
 
-        const accessToken = generateAccessToken(user)
-        const refreshToken = generateRefreshToken(user)
+        const accessToken = generateAccessToken({ _id: user._id.toString(), role: user.role })
+        const refreshToken = generateRefreshToken({ _id: user._id.toString(), role: user.role })
 
         return res.status(200).json({
             message:"Login successfully",
