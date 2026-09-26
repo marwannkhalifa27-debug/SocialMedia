@@ -2,6 +2,7 @@ import type { Request, Response ,NextFunction } from "express"
 import { userModel } from "../../DB/models/user.model.js"
 import { findUserByEmail, findUserByUsername } from "../user/user.service.js"
 import bcrypt from "bcrypt"
+import { generateAccessToken, generateRefreshToken } from "../../common/utils/token.utils.js"
 
 
 
@@ -19,6 +20,10 @@ export const register = async (req:Request, res:Response, next:NextFunction) => 
         const user = await userModel.create({
             fullName, username, email, password:hashed, sex, age, phone
         })
+
+        const accessToken = generateAccessToken(user)
+        const refreshToken = generateRefreshToken(user)
+        
         return res.status(201).json({
             message:"User created",
             data: {
@@ -30,6 +35,10 @@ export const register = async (req:Request, res:Response, next:NextFunction) => 
                 age:user.age,
                 phone:user.phone,
                 role:user.role
+            },
+            tokens: {
+                accessToken:accessToken,
+                refreshToken:refreshToken
             }
         })
     } catch (error) {
@@ -46,9 +55,15 @@ export const login = async (req:Request, res:Response, next:NextFunction) => {
             return res.status(401).json({ message: "Invalid email or password" })
         }
 
+        const accessToken = generateAccessToken(user)
+        const refreshToken = generateRefreshToken(user)
+
         return res.status(200).json({
             message:"Login successfully",
-            email: email
+            tokens: {
+                accessToken: accessToken,
+                refreshToken: refreshToken
+            }
         })
     } catch (error) {
         next(error)
