@@ -3,7 +3,7 @@ import { access_token_secret, refresh_token_secret } from "../../config/env.conf
 
 export const generateAccessToken = (user: { _id: string; role: string }) => {
     if (!access_token_secret) {
-        throw new Error("REFRESH_TOKEN_SECRET is not configured")
+        throw new Error("ACCESS_TOKEN_SECRET is not configured")
     }
 
     return jwt.sign(
@@ -15,7 +15,7 @@ export const generateAccessToken = (user: { _id: string; role: string }) => {
 
 export const generateRefreshToken = (user: { _id: string; role: string }) => {
     if (!refresh_token_secret) {
-        throw new Error("ACCESS_TOKEN_SECRET is not configured")
+        throw new Error("REFRESH_TOKEN_SECRET is not configured")
     }
 
     return jwt.sign(
