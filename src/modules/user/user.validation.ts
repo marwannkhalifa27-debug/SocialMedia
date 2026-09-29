@@ -3,9 +3,9 @@ import z from "zod";
 
 export const updateSchema = z.object(
     {
-        fullName:z.string().optional(),
-        username:z.string().optional(),
-        age:z.number().optional(),
-        phone:z.number().optional()
+        fullName:z.string().min(2).max(50).optional(),
+        username:z.string().min(8).max(20).trim().toLowerCase().optional(),
+        age:z.number().min(18).max(60).optional(),
+        phone:z.string().optional()
     }
 ).strict()

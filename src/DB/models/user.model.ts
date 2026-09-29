@@ -13,7 +13,9 @@ const userSchema = new Schema({
             required: true,
             unique: true,
             minLength: 8,
-            maxLength: 20
+            maxLength: 20,
+            trim: true,
+            lowercase:true 
         },
     age: {
         type: Number,
@@ -31,7 +33,9 @@ const userSchema = new Schema({
     email: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        trim: true,
+        lowercase:true 
     },
     password: { 
         type: String, 
