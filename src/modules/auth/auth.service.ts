@@ -1,15 +1,15 @@
 import bcrypt from "bcrypt";
 import { userModel } from "../../DB/models/user.model.js";
 import { UserService } from "../user/user.service.js";
+import { TokenService } from "../../common/utils/token.utils.js";
 import { AppError } from "../../common/errors/app.error.js";
-import {
-  generateAccessToken,
-  generateRefreshToken,
-} from "../../common/utils/token.utils.js";
 import type { LoginDto, RegisterDto } from "./auth.validation.js";
 
 export class AuthService {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly tokenService: TokenService
+  ) {}
 
   public async register(dto: RegisterDto) {
     const { fullName, username, email, password, sex, age, phone } = dto;
@@ -23,21 +23,22 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await userModel.create({ 
-        fullName,
-        username,
-        email,
-        password: hashedPassword,
-        sex,
-        age,
-        phone
+    const user = await userModel.create({
+      fullName,
+      username,
+      email,
+      password: hashedPassword,
+      ...(sex === undefined ? {} : { sex }),
+      age,
+      phone,
     });
 
-    const accessToken = generateAccessToken({
+    const accessToken = this.tokenService.generateAccessToken({
       _id: user._id.toString(),
       role: user.role,
     });
-    const refreshToken = generateRefreshToken({
+
+    const refreshToken = this.tokenService.generateRefreshToken({
       _id: user._id.toString(),
       role: user.role,
     });
@@ -53,7 +54,10 @@ export class AuthService {
         phone: user.phone,
         role: user.role,
       },
-      tokens: { accessToken, refreshToken },
+      tokens: {
+        accessToken,
+        refreshToken,
+      },
     };
   }
 
@@ -65,17 +69,21 @@ export class AuthService {
       throw AppError.unauthorized("Invalid email or password");
     }
 
-    const accessToken = generateAccessToken({
+    const accessToken = this.tokenService.generateAccessToken({
       _id: user._id.toString(),
       role: user.role,
     });
-    const refreshToken = generateRefreshToken({
+
+    const refreshToken = this.tokenService.generateRefreshToken({
       _id: user._id.toString(),
       role: user.role,
     });
 
     return {
-      tokens: { accessToken, refreshToken },
+      tokens: {
+        accessToken,
+        refreshToken,
+      },
     };
   }
 }

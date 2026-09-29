@@ -1,42 +1,59 @@
-import jwt from "jsonwebtoken"
-import { access_token_secret, refresh_token_secret } from "../../config/env.config.js"
+import jwt, { type JwtPayload, type SignOptions } from "jsonwebtoken";
+import { access_token_secret, refresh_token_secret } from "../../config/env.config.js";
+import { AppError } from "../errors/app.error.js";
 
-export const generateAccessToken = (user: { _id: string; role: string }) => {
+export interface TokenPayload {
+  _id: string;
+  role: string;
+}
+
+export class TokenService {
+  private readonly accessTokenSecret: string;
+  private readonly refreshTokenSecret: string;
+
+  constructor() {
     if (!access_token_secret) {
-        throw new Error("ACCESS_TOKEN_SECRET is not configured")
+      throw new Error("ACCESS_TOKEN_SECRET is not configured in environment variables");
     }
-
-    return jwt.sign(
-        { id:user._id, role:user.role },
-        access_token_secret,
-        { expiresIn:"1h" }
-    )
-}
-
-export const generateRefreshToken = (user: { _id: string; role: string }) => {
     if (!refresh_token_secret) {
-        throw new Error("REFRESH_TOKEN_SECRET is not configured")
+      throw new Error("REFRESH_TOKEN_SECRET is not configured in environment variables");
     }
 
+    this.accessTokenSecret = access_token_secret;
+    this.refreshTokenSecret = refresh_token_secret;
+  }
+
+  public generateAccessToken(payload: TokenPayload, expiresIn: SignOptions["expiresIn"] = "1h"): string {
     return jwt.sign(
-        { id:user._id },
-        refresh_token_secret,
-        { expiresIn:"7d" }
-    )
-}
+      { id: payload._id, role: payload.role },
+      this.accessTokenSecret,
+      { expiresIn }
+    );
+  }
 
-export const VerifyAccessToken = (token: string) => {
-    if (!access_token_secret) {
-        throw new Error("ACCESS_TOKEN_SECRET is not configured")
+  public generateRefreshToken(payload: TokenPayload, expiresIn: SignOptions["expiresIn"] = "7d"): string {
+    return jwt.sign(
+      { id: payload._id },
+      this.refreshTokenSecret,
+      { expiresIn }
+    );
+  }
+
+  public verifyAccessToken(token: string): JwtPayload {
+    try {
+      return jwt.verify(token, this.accessTokenSecret) as JwtPayload;
+    } catch {
+      throw AppError.unauthorized("Invalid or expired access token");
     }
+  }
 
-    return jwt.verify(token, access_token_secret)
-}
-
-export const VerifyRefreshToken = (token: string) => {
-    if (!refresh_token_secret) {
-        throw new Error("REFRESH_TOKEN_SECRET is not configured")
+  public verifyRefreshToken(token: string): JwtPayload {
+    try {
+      return jwt.verify(token, this.refreshTokenSecret) as JwtPayload;
+    } catch {
+      throw AppError.unauthorized("Invalid or expired refresh token");
     }
-
-    return jwt.verify(token, refresh_token_secret)
+  }
 }
+
+export const tokenService = new TokenService();

@@ -2,6 +2,7 @@ import { Router, type Request, type Response, type NextFunction } from "express"
 import { BaseController } from "../../common/controllers/base.js";
 import { AuthService } from "./auth.service.js";
 import { userService } from "../user/user.service.js";
+import { tokenService } from "../../common/utils/token.utils.js";
 import { validate } from "../../common/middleware/validation.middleware.js";
 import { loginSchema, registerSchema } from "./auth.validation.js";
 
@@ -20,7 +21,11 @@ export class AuthController extends BaseController {
       validate(registerSchema),
       this.register.bind(this)
     );
-    this.router.post("/login", validate(loginSchema), this.login.bind(this));
+    this.router.post(
+      "/login",
+      validate(loginSchema),
+      this.login.bind(this)
+    );
   }
 
   public register = async (
@@ -50,6 +55,6 @@ export class AuthController extends BaseController {
   };
 }
 
-const authService = new AuthService(userService);
+const authService = new AuthService(userService, tokenService);
 export const authController = new AuthController(authService);
 export default authController.router;
