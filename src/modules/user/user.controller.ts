@@ -1,12 +1,11 @@
 
 
-import { Router, type NextFunction } from "express";
+import { Router, type Request, type Response, type NextFunction } from "express";
 import { authenticate } from "../../common/middleware/auth.middleware.js";
 import { validate } from "../../common/middleware/validation.middleware.js";
 import { updateSchema } from "./user.validation.js";
 import { BaseController } from "../../common/controllers/base.js";
-import type { UserService } from "./user.service.js";
-const userRouter = Router()
+import { userService, type UserService } from "./user.service.js";
 
 
 export class UserController extends BaseController{
@@ -19,7 +18,7 @@ export class UserController extends BaseController{
     }
     private initializeRoutes(): void{
         this.router.get("/me", authenticate, this.getProfile.bind(this));
-        this.router.patch("/me", authenticate, validate(updateSchema), this.updateUser.bind(this))
+        this.router.patch("/me", authenticate, validate(updateSchema), this.updateProfile.bind(this))
     }
 
     public getProfile = async (

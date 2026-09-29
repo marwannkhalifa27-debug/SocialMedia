@@ -1,71 +1,81 @@
-import type { Request, Response ,NextFunction } from "express"
-import { userModel } from "../../DB/models/user.model.js"
-import { findUserByEmail, findUserByUsername } from "../user/user.service.js"
-import bcrypt from "bcrypt"
-import { generateAccessToken, generateRefreshToken } from "../../common/utils/token.utils.js"
+import bcrypt from "bcrypt";
+import { userModel } from "../../DB/models/user.model.js";
+import { UserService } from "../user/user.service.js";
+import { AppError } from "../../common/errors/app.error.js";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../../common/utils/token.utils.js";
+import type { LoginDto, RegisterDto } from "./auth.validation.js";
 
+export class AuthService {
+  constructor(private readonly userService: UserService) {}
 
+  public async register(dto: RegisterDto) {
+    const { fullName, username, email, password, sex, age, phone } = dto;
 
-export const register = async (req:Request, res:Response, next:NextFunction) => {
-    try {
-        const { fullName, username, email, password, sex, age, phone } = req.body
+    const existingEmail = await this.userService.findUserByEmail(email);
+    const existingUsername = await this.userService.findUserByUsername(username);
 
-        const exists = await findUserByEmail(email) || await findUserByUsername(username)
-        if(exists){
-            return res.status(409).json({message:"Email or username is already used"})
-        }
-
-        const hashed = await bcrypt.hash(password, 10)
-
-        const user = await userModel.create({
-            fullName, username, email, password:hashed, sex, age, phone
-        })
-
-        const accessToken = generateAccessToken({ _id: user._id.toString(), role: user.role })
-        const refreshToken = generateRefreshToken({ _id: user._id.toString(), role: user.role })
-        
-        return res.status(201).json({
-            message:"User created",
-            data: {
-                id:user._id,
-                fullName:user.fullName,
-                username:user.username,
-                email:user.email,
-                sex:user.sex,
-                age:user.age,
-                phone:user.phone,
-                role:user.role
-            },
-            tokens: {
-                accessToken:accessToken,
-                refreshToken:refreshToken
-            }
-        })
-    } catch (error) {
-        next(error)
+    if (existingEmail || existingUsername) {
+      throw AppError.conflict("Email or username is already in use");
     }
-}
 
-export const login = async (req:Request, res:Response, next:NextFunction) => {
-    try {
-        const { email , password } = req.body
-        const user = await findUserByEmail(email)
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-            return res.status(401).json({ message: "Invalid email or password" })
-        }
+    const user = await userModel.create({ 
+        fullName,
+        username,
+        email,
+        password: hashedPassword,
+        sex,
+        age,
+        phone
+    });
 
-        const accessToken = generateAccessToken({ _id: user._id.toString(), role: user.role })
-        const refreshToken = generateRefreshToken({ _id: user._id.toString(), role: user.role })
+    const accessToken = generateAccessToken({
+      _id: user._id.toString(),
+      role: user.role,
+    });
+    const refreshToken = generateRefreshToken({
+      _id: user._id.toString(),
+      role: user.role,
+    });
 
-        return res.status(200).json({
-            message:"Login successfully",
-            tokens: {
-                accessToken: accessToken,
-                refreshToken: refreshToken
-            }
-        })
-    } catch (error) {
-        next(error)
+    return {
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        username: user.username,
+        email: user.email,
+        sex: user.sex,
+        age: user.age,
+        phone: user.phone,
+        role: user.role,
+      },
+      tokens: { accessToken, refreshToken },
+    };
+  }
+
+  public async login(dto: LoginDto) {
+    const { email, password } = dto;
+    const user = await this.userService.findUserByEmail(email);
+
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      throw AppError.unauthorized("Invalid email or password");
     }
+
+    const accessToken = generateAccessToken({
+      _id: user._id.toString(),
+      role: user.role,
+    });
+    const refreshToken = generateRefreshToken({
+      _id: user._id.toString(),
+      role: user.role,
+    });
+
+    return {
+      tokens: { accessToken, refreshToken },
+    };
+  }
 }
