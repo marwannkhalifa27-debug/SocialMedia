@@ -1,40 +1,40 @@
 import { userModel } from "../../DB/models/user.model.js"
+import { AppError } from "../../common/errors/app.error.js"
 import type { Request, Response, NextFunction } from "express"
 
-export const findUserByEmail = async (email: string) => {
-    return await userModel
-        .findOne({ email })
-        .select("+password")
+
+export interface updateUserDto {
+    fullName?: string,
+    username?: string
+    age?:number,
+    phone?:string
 }
 
-export const findUserByUsername = async (username: string) => {
-    return await userModel.findOne({ username })
-}
-export const findUserById = async (id: string) => {
-    return await userModel.findById(id)
-}
-
-export const getUserData = async (req:Request, res:Response, next:NextFunction) => {
-    try {
-        const user = await findUserById(req.user!.id)
-        if (!user) return res.status(404).json({ message: "User not found" })
-        return res.status(200).json({ data: user })
-    } catch (error) {
-        next(error)
+export class UserService {
+    public async findUserByEmail(email: string){
+        return await userModel
+            .findOne({ email })
+            .select("+password")
+    }
+    public async findUserByUsername(username: string){
+        return await userModel.findOne({ username })
+    }
+    public async findUserById(id: string){
+        const user = await userModel.findById(id)    
+        if(!user){
+            throw AppError.notFound("User not found")
+        }
+        return user
+    }
+    public async updateUser(id: string, updateData: updateUserDto){
+        const updatedUser = await userModel.findByIdAndUpdate(id, updateData,{
+            new: true,
+            runValidators: true
+        })
+        if(!updatedUser){
+            throw AppError.notFound("User not found")
+        }
+        return updatedUser
     }
 }
-
-export const updateUser = async (req:Request, res:Response, next:NextFunction) => {
-    try {
-        const { fullName, username, age, phone } = req.body
-        const updatedUser = await userModel.findByIdAndUpdate(
-            req.user!.id,
-            { fullName, username, age, phone },
-            { new: true, runValidators: true }
-        )
-        if(!updatedUser) return res.status(404).json({ message: "User not found" })
-        return res.status(200).json({ data: updatedUser })
-    } catch (error) {
-        next(error)
-    }
-}
+export const userService = new UserService()
