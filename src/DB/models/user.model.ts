@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-
+import bcrypt from "bcrypt"
 
 const userSchema = new Schema({
     fullName: {
@@ -59,4 +59,15 @@ const userSchema = new Schema({
 {
     timestamps:true
 })
+
+userSchema.pre("save", async function (){
+    if(!this.isModified("password")) return;
+    this.password = await bcrypt.hash(this.password, 10)
+})
+
+userSchema.post("save", function (doc){
+    console.log(`New user created: ${doc.username}`)
+})
+
+
 export const userModel = mongoose.model("user", userSchema)

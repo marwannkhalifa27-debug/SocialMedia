@@ -21,13 +21,11 @@ export class AuthService {
       throw AppError.conflict("Email or username is already in use");
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     const user = await userModel.create({
       fullName,
       username,
       email,
-      password: hashedPassword,
+      password,
       ...(sex === undefined ? {} : { sex }),
       age,
       phone,
