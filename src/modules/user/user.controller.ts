@@ -49,6 +49,21 @@ export class UserController extends BaseController{
       next(error);
     }
   };
+  public updateAvatar = async(
+    req:Request,
+    res: Response, 
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const user = await this.userService.updateAvatar(
+        req.user?.id,
+        req.file?.path
+      )
+      this.sendSuccess(res, user, "User avatar has been changed succussfully")
+    } catch (error) {
+      next(error)
+    }
+  }
 }
 export const userController = new UserController(userService);
 export default userController.router;
