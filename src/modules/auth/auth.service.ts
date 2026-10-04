@@ -32,12 +32,12 @@ export class AuthService {
     });
 
     const accessToken = this.tokenService.generateAccessToken({
-      _id: user._id.toString(),
+      id: user._id.toString(),
       role: user.role,
     });
 
     const refreshToken = this.tokenService.generateRefreshToken({
-      _id: user._id.toString(),
+      id: user._id.toString(),
       role: user.role,
     });
 
@@ -68,12 +68,12 @@ export class AuthService {
     }
 
     const accessToken = this.tokenService.generateAccessToken({
-      _id: user._id.toString(),
+      id: user._id.toString(),
       role: user.role,
     });
 
     const refreshToken = this.tokenService.generateRefreshToken({
-      _id: user._id.toString(),
+      id: user._id.toString(),
       role: user.role,
     });
 

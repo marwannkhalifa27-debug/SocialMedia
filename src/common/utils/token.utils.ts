@@ -2,8 +2,8 @@ import jwt, { type JwtPayload, type SignOptions } from "jsonwebtoken";
 import { access_token_secret, refresh_token_secret } from "../../config/env.config.js";
 import { AppError } from "../errors/app.error.js";
 
-export interface TokenPayload {
-  _id: string;
+export interface AppJwtPayload {
+  id: string;
   role: string;
 }
 
@@ -23,17 +23,17 @@ export class TokenService {
     this.refreshTokenSecret = refresh_token_secret;
   }
 
-  public generateAccessToken(payload: TokenPayload, expiresIn: SignOptions["expiresIn"] = "1h"): string {
+  public generateAccessToken(payload: AppJwtPayload, expiresIn: SignOptions["expiresIn"] = "1h"): string {
     return jwt.sign(
-      { id: payload._id, role: payload.role },
+      { id: payload.id, role: payload.role },
       this.accessTokenSecret,
       { expiresIn }
     );
   }
 
-  public generateRefreshToken(payload: TokenPayload, expiresIn: SignOptions["expiresIn"] = "7d"): string {
+  public generateRefreshToken(payload: AppJwtPayload, expiresIn: SignOptions["expiresIn"] = "7d"): string {
     return jwt.sign(
-      { id: payload._id },
+      { id: payload.id },
       this.refreshTokenSecret,
       { expiresIn }
     );
@@ -41,7 +41,7 @@ export class TokenService {
 
   public verifyAccessToken(token: string): JwtPayload {
     try {
-      return jwt.verify(token, this.accessTokenSecret) as JwtPayload;
+      return jwt.verify(token, this.accessTokenSecret) as AppJwtPayload;
     } catch {
       throw AppError.unauthorized("Invalid or expired access token");
     }
@@ -49,7 +49,7 @@ export class TokenService {
 
   public verifyRefreshToken(token: string): JwtPayload {
     try {
-      return jwt.verify(token, this.refreshTokenSecret) as JwtPayload;
+      return jwt.verify(token, this.refreshTokenSecret) as AppJwtPayload;
     } catch {
       throw AppError.unauthorized("Invalid or expired refresh token");
     }
