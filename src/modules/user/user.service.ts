@@ -36,13 +36,15 @@ export class UserService {
         }
         return updatedUser
     }
-    public async updateAvatar(id: string, avatarUrl: string){
-
-        if(!req.file){
-            throw AppError.notFound("No file provided")
+    public async updateAvatar(id: string, avatarPath: string){
+        const user = await userModel.findByIdAndUpdate(
+            id,
+            {avatarUrl: avatarPath },
+            { new: true }
+        )
+        if(!user){
+            throw AppError.notFound("User not found")
         }
-
-        const user = await userModel.findByIdAndUpdate(req.user?.id, { avatarUrl: req.file.path}, {new: true})
         return user
     }
 }

@@ -6,6 +6,8 @@ import { validate } from "../../common/middleware/validation.middleware.js";
 import { updateSchema } from "./user.validation.js";
 import { BaseController } from "../../common/controllers/base.js";
 import { userService, type UserService } from "./user.service.js";
+import { AppError } from "../../common/errors/app.error.js";
+import upload from "../../common/middleware/upload.middleware.js";
 
 
 export class UserController extends BaseController{
@@ -19,6 +21,7 @@ export class UserController extends BaseController{
     private initializeRoutes(): void{
         this.router.get("/me", authenticate, this.getProfile.bind(this));
         this.router.patch("/me", authenticate, validate(updateSchema), this.updateProfile.bind(this))
+        this.router.patch("/me/avatar", authenticate, upload.single("avatar"), this.updateAvatar.bind(this))
     }
 
     public getProfile = async (
@@ -55,9 +58,16 @@ export class UserController extends BaseController{
     next: NextFunction
   ): Promise<void> => {
     try {
+      if (!req.file) {
+        throw AppError.badRequest("No file provided")
+      }
+      if (!req.user?.id) {
+        throw AppError.unauthorized("Unauthorized")
+      }
+
       const user = await this.userService.updateAvatar(
-        req.user?.id,
-        req.file?.path
+        req.user.id,
+        req.file.path
       )
       this.sendSuccess(res, user, "User avatar has been changed succussfully")
     } catch (error) {
