@@ -39,17 +39,17 @@ export class TokenService {
     );
   }
 
-  public verifyAccessToken(token: string): JwtPayload {
+  public verifyAccessToken(token: string): AppJwtPayload {
     try {
-      return jwt.verify(token, this.accessTokenSecret) as AppJwtPayload;
+      return jwt.verify(token, this.accessTokenSecret) as unknown as AppJwtPayload;
     } catch {
       throw AppError.unauthorized("Invalid or expired access token");
     }
   }
 
-  public verifyRefreshToken(token: string): JwtPayload {
+  public verifyRefreshToken(token: string): AppJwtPayload {
     try {
-      return jwt.verify(token, this.refreshTokenSecret) as AppJwtPayload;
+      return jwt.verify(token, this.refreshTokenSecret) as unknown as AppJwtPayload;
     } catch {
       throw AppError.unauthorized("Invalid or expired refresh token");
     }
