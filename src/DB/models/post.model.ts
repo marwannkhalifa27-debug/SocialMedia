@@ -7,7 +7,7 @@ const postSchema = new Schema({
         maxlength: 5000
     },
     author: {
-        type: mongoose.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: "user",
         required: true
     },

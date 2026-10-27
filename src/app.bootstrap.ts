@@ -5,6 +5,21 @@ import { logger } from "./common/middleware/logger.middleware.js";
 import { globalErrorHandler } from "./common/middleware/error.middleware.js";
 import authRouter from "./modules/auth/auth.controller.js";
 import userRouter from "./modules/user/user.controller.js";
+import { GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLString } from "graphql";
+import { createHandler } from 'graphql-http/lib/use/express';
+
+const userType = new GraphQLObjectType({
+  name: "User",
+  fields: {
+    id: { type: new GraphQLNonNull(GraphQLInt) },
+    name: { type: GraphQLString },
+  },
+});
+
+const users = [
+  { id: 1, name: "Ahmed" },
+  { id: 2, name: "Yousef" },
+];
 
 export class Application {
   private app: Express;
@@ -24,6 +39,41 @@ export class Application {
   }
 
   private setupRoutes(): void {
+
+
+    const schema = new GraphQLSchema({
+        query: new GraphQLObjectType({
+          name: "Query",
+          description: "Hi there",
+          fields: {
+            hello: {
+              type: new GraphQLNonNull(GraphQLString),
+              description: "return hello",
+              resolve: () => "Marwan",
+            },
+            getUser:{
+              type: userType,
+              args: {
+                id: { type: new GraphQLNonNull(GraphQLInt)}
+              },
+              resolve:(parent: any, args: any) => {
+                const { id } = args
+                return users.find(user => user.id === id)
+              }
+            },
+            getUsers:{
+              type: new GraphQLList(userType),
+              resolve:() => {
+               return users
+              }
+            }
+          },
+        }),
+      });
+
+      this.app.use("/graphql", createHandler({ schema }))
+
+
     this.app.use("/auth", authRouter);
     this.app.use("/user", userRouter);
 
